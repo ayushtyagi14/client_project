@@ -10,7 +10,7 @@ const sessionSchema= new mongoose.Schema({
         type: String,
         required: true
     },
-    sessionTiming: {
+    sessionTime: {
         type: String,
         required: true
     },
@@ -18,11 +18,19 @@ const sessionSchema= new mongoose.Schema({
         type: String,
         required: true
     },
-    price: {
+    sessionFee: {
         type: Number,
         required: true
     },
-    duration: {
+    sessionRegisFee: {
+        type: Number,
+        required: true
+    },
+    sessionDuration: {
+        type: Number,
+        required: true
+    },
+    sessionDesc: {
         type: String,
         required: true
     },

@@ -164,6 +164,19 @@ router.post("/login", async (req, res) => {
         userId: ""
       });
 
+  //Checking if the email and password is of ADMIN
+  if(req.body.email == process.env.ADMIN_ID)
+  {
+    if(req.body.password == process.env.ADMIN_PASSWORD)
+    {
+      return res.status(200).send({ resCode: 200, message: "Admin Logged in!", userType: "Admin", email: req.body.email });
+    }
+    else
+    {
+      return res.status(400).send({ resCode: 400, message: "Invalid Admin Password" });
+    }
+  }
+
   //Checking if the email exists
   const user = await User.findOne({ email: req.body.email });
   if (!user)

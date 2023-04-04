@@ -9,6 +9,8 @@ const authRoute=require('./routes/auth');
 const orderRoute=require('./routes/order');
 const sessionRoute=require('./routes/session');
 const adminSessionRoute=require('./routes/adminSession');
+const adminBlogRoute=require('./routes/adminBlog');
+const adminTestimonialRoute=require('./routes/adminTestimonial');
 const postRoute=require('./routes/posts');
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.use('/api/user',authRoute);
 app.use('/api/user',orderRoute);
 app.use('/api/user',sessionRoute);
 app.use('/api/admin',adminSessionRoute);
+app.use('/api/admin',adminBlogRoute);
+app.use('/api/admin',adminTestimonialRoute);
 app.use('/api/posts',postRoute);
 
 app.listen(port,() => {
