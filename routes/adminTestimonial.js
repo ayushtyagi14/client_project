@@ -208,6 +208,32 @@ router.get("/getAllSessions", async (req, res) => {
     res.status(200).send({ resCode: 200, sessions: arr });
 });
 
+// ----------------------------------------------- Get Single Session ------------------------------------------------------------------
+router.get("/getSingleSession/:sessionId", async (req, res) => {
+    var sessionId=req.params.sessionId;
+  
+    let sessionFinding = await Session.findOne({ sessionId: sessionId });
+    let arr=[];
+
+    let x={
+        ...sessionFinding
+    };
+    let k=x._doc;
+
+    const snapshot=await db.collection("sessions").get();
+    const list=snapshot.docs.map((doc)=>doc.data());
+    
+    for(let i=0;i<list.length;i++)
+    {
+        if(list[i].sessionId == sessionFinding.sessionId)
+        {
+            k.sessionImg= list[i].sessionImgURL;
+        }
+    }
+    
+    res.status(200).send({ resCode: 200, session: k });
+});
+
 // ----------------------------------------------- Update Session ------------------------------------------------------------------
 router.patch("/editSession/:sessionId", async (req, res) => {
     try {
