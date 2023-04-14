@@ -14,12 +14,12 @@ router.post("/checkout", async (req, res) => {
         currency: "INR",
     };
     const order = await instance.orders.create(options);
-    
+    console.log("Order: "+order);
     res.status(200).json({ success: true, order });
 });
 
 router.post("/paymentVerification", async (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -40,16 +40,19 @@ router.post("/paymentVerification", async (req, res) => {
     // });
 
     //Create a new user
-    const user = new Payment({
-        userId: userId,
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-    });
+    // const user = new Payment({
+    //     // userId: userId,
+    //     razorpay_order_id,
+    //     razorpay_payment_id,
+    //     razorpay_signature,
+    // });
   
-    var savedUser = await user.save();
-
-    res.status(200).send({ resCode: 200, message: "Payment Completed" });
+    // var savedUser = await user.save();
+    console.log("Payment verified, done");
+    // res.status(200).send({ resCode: 200, message: "Payment Completed" });
+    res.redirect(
+      `http://localhost:3000/paymentsuccess?reference=${razorpay_payment_id}`
+    );
   } else {
     res.status(400).json({
       success: false,
@@ -57,7 +60,7 @@ router.post("/paymentVerification", async (req, res) => {
   }
 });
 
-router.get("/api/getkey", async (req, res) =>
+router.get("/getkey", async (req, res) =>
   res.status(200).json({ key: process.env.RAZORPAY_API_KEY })
 );
 

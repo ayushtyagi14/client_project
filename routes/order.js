@@ -1,28 +1,63 @@
 const router = require("express").Router();
 const User = require("../model/User");
 const Order = require("../model/Order");
+const Session = require("../model/Session");
 const { v4: uuid4 } = require('uuid');
 
 router.post("/order", async (req, res) => {
     var userId= req.body.userId;
-    var objectFinding = await User.findOne({ userId: userId });
+    var sessionId = req.body.sessionId;
+    var sessionObjectFinding = await Session.findOne({ sessionId: sessionId });
+    var orderId = uuid4();
 
     //Create a new user
     const user = new Order({
-      orderId: uuid4(),
+      orderId: orderId,
       userId: userId,
-      name: objectFinding.name,
-      email: objectFinding.email,
-      mobileNumber: objectFinding.mobileNumber,
-      price: req.body.price,
-      duration: req.body.duration,
-      timeSlot: req.body.timeSlot,
-      paymentStatus: "Pending"
+      sessionId: sessionId,
+      name: req.body.name,
+      email: req.body.email,
+      mobileNumber: req.body.mobileNumber,
+      gender: req.body.gender,
+      dob: req.body.dob,
+      age: req.body.age,
+      address: req.body.address,
+      motherName: req.body.motherName,
+      fatherName: req.body.fatherName,
+      motherNumber: req.body.motherNumber,
+      fatherNumber: req.body.fatherNumber,
+      guardianName: req.body.guardianName,
+      guardianNumber: req.body.guardianNumber,
+      know: req.body.know,
+      primaryGoals: req.body.primaryGoals,
+      yogaBefore: req.body.yogaBefore,
+      healthConcerns: req.body.healthConcerns,
+      paymentStatus: "Pending",
+      paymentType: "Not Specified"
     });
 
     var savedUser = await user.save();
 
-    res.status(200).send({ resCode: 200, message: "Order Requested" });
+    res.status(200).send({ resCode: 200, message: "Order Requested", sessionDetails: sessionObjectFinding, orderId: orderId });
+});
+
+
+router.post("/orderPaymentType", async (req, res) => {
+  var orderId= req.body.orderId;
+  var dbResponse=await Order.updateOne(
+    { orderId: orderId },
+    { $set: { paymentType: req.body.paymentType } }
+  );
+
+  res.status(200).send({ resCode: 200, message: "Order Payment Type Updated Successfully!!", orderId: orderId });
+});
+
+
+router.get("/myOrders/:userId", async (req, res) => {
+  var userId= req.params.userId;
+  let ordersFinding = await Order.find({ userId: userId });
+  
+  res.status(200).send({ resCode: 200, myOrders: ordersFinding });
 });
 
 module.exports = router;

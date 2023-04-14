@@ -1,16 +1,16 @@
 const { number } = require('@hapi/joi');
 const mongoose=require('mongoose');
 
-const sessionSchema= new mongoose.Schema({
-    sessionId: {
+const eventSchema= new mongoose.Schema({
+    eventId: {
         type: String,
         required: true
     },
-    sessionName: {
+    eventName: {
         type: String,
         required: true
     },
-    sessionTime: {
+    eventTime: {
         type: String,
         required: true
     },
@@ -18,19 +18,19 @@ const sessionSchema= new mongoose.Schema({
         type: String,
         required: true
     },
-    sessionFee: {
+    eventFee: {
         type: Number,
         required: true
     },
-    sessionDuration: {
-        type: Number,
-        required: true
-    },
-    sessionDesc: {
+    eventDuration: {
         type: String,
         required: true
     },
-    sessionPublishDate: {
+    eventDesc: {
+        type: String,
+        required: true
+    },
+    eventDate: {
         type: String,
         required: true
     },
@@ -40,4 +40,4 @@ const sessionSchema= new mongoose.Schema({
     }
 });
 
-module.exports=mongoose.model('Session',sessionSchema);
+module.exports=mongoose.model('Event',eventSchema);

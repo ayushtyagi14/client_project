@@ -4,11 +4,15 @@ const mongoose=require('mongoose');
 const orderSchema= new mongoose.Schema({
     orderId: {
         type: String,
-        default: "Null"
+        required: true
     },
     userId: {
         type: String,
-        default: "Null"
+        required: true
+    },
+    sessionId: {
+        type: String,
+        required: true
     },
     name: {
         type: String,
@@ -28,19 +32,67 @@ const orderSchema= new mongoose.Schema({
         min: 1000000000,
         required: true
     },
-    price: {
-        type: Number,
-        required: true
-    },
-    duration: {
+    gender: {
         type: String,
         required: true
     },
-    timeSlot: {
+    dob: {
+        type: String,
+        required: true
+    },
+    age: {
+        type: Number,
+        required: true
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    motherName: {
+        type: String,
+        required: true
+    },
+    fatherName: {
+        type: String,
+        required: true
+    },
+    motherNumber: {
+        type: Number,
+        required: true
+    },
+    fatherNumber: {
+        type: Number,
+        required: true
+    },
+    guardianName: {
+        type: String,
+        required: true
+    },
+    guardianNumber: {
+        type: Number,
+        required: true
+    },
+    know: {
+        type: String,
+        required: true
+    },
+    primaryGoals: {
+        type: String,
+        required: true
+    },
+    yogaBefore: {
+        type: String,
+        required: true
+    },
+    healthConcerns: {
         type: String,
         required: true
     },
     paymentStatus: {
+        type: String,
+        required: true
+    },
+    paymentType: {
         type: String,
         required: true
     },

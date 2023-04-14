@@ -3,6 +3,9 @@ const multer = require('multer')
 const path = require('path')
 const Testimonial = require('../model/Testimonial')
 const Session = require("../model/Session");
+const User = require("../model/User");
+const Order = require("../model/Order");
+const Event = require("../model/Event");
 const { v4: uuid4 } = require('uuid');
 const firebase = require("firebase/app");
 const admin = require("firebase-admin");
@@ -129,6 +132,7 @@ router.post("/deleteTestimonial", async (req, res) => {
 });
 
 
+
 // ----------------------------------------------- Create Session -----------------------------------------------------------------
 router.post('/makeSession', upload.single("myFile"), async (req, res) => {
     const storageRef = ref(storage, `sessions/${req.file.originalname}`);
@@ -170,7 +174,6 @@ router.post('/makeSession', upload.single("myFile"), async (req, res) => {
         sessionTime: req.body.sessionTime,
         teacherName: req.body.teacherName,
         sessionFee: req.body.sessionFee,
-        sessionRegisFee: req.body.sessionRegisFee,
         sessionDuration: req.body.sessionDuration,
         sessionDesc: req.body.sessionDesc,
         sessionPublishDate: currentDate,
@@ -255,6 +258,155 @@ router.post("/deleteSession", async (req, res) => {
     let sessionFinding= await Session.deleteOne({ sessionId: sessionId });
   
     res.status(200).send({ resCode: 200, message: "Session Deleted Successfully!!" });
+});
+
+
+
+// ----------------------------------------------- Get All Users ------------------------------------------------------------------
+router.get("/getAllUsers", async (req, res) => {
+    var users = await User.find();
+    
+    res.status(200).send({ resCode: 200, users: users });
+});
+
+// --------------------------------------------- Mark Payment Done ------------------------------------------------------------------
+router.post("/markPaymentDone", async (req, res) => {
+    var orderId= req.body.orderId;
+    var dbResponse=await Order.updateOne(
+      { orderId: orderId },
+      { $set: { paymentStatus: "Completed" } }
+    );
+
+    res.status(200).send({ resCode: 200, message: "Order Payment Status Updated Successfully!!", orderId: orderId });
+});
+
+
+
+// ----------------------------------------------- Create Event -----------------------------------------------------------------
+router.post('/makeEvent', upload.single("myFile"), async (req, res) => {
+    const storageRef = ref(storage, `events/${req.file.originalname}`);
+    const eventId=uuid4();
+
+    //Forming Current Date
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let currentDate = `${day}-${month}-${year}`;
+    // console.log(currentDate); // "17-6-2022"
+  
+    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
+      console.log("file uploaded");
+      getDownloadURL(ref(storage, `events/${req.file.originalname}`)).then((url)=> {
+        console.log("URL: "+url);
+
+        try{
+          const userJson={
+              eventId: eventId,
+              eventImgURL: url
+          };
+          const response=db.collection("events").doc(eventId).set(userJson);
+          console.log(userJson);
+      } catch(error) {
+          console.log(error);
+      }
+    
+      });
+    });
+  
+    console.log(req.file);
+
+    const user = new Event({
+        eventId: eventId,
+        eventName: req.body.eventName,
+        eventTime: req.body.eventTime,
+        teacherName: req.body.teacherName,
+        eventFee: req.body.eventFee,
+        eventDuration: req.body.eventDuration,
+        eventDesc: req.body.eventDesc,
+        eventDate: req.body.eventDate
+    });
+      
+    var savedUser = await user.save();
+    res.status(200).send({ resCode: 200, message: "New Event Added Successfully!!" });
+});
+
+// ----------------------------------------------- Get All Events ------------------------------------------------------------------
+router.get("/getAllEvents", async (req, res) => {
+    var events = await Event.find();
+    let arr=[];
+
+    for(let j=0;j<events.length;j++)
+    {
+        let x={
+            ...events[j]
+        };
+        let k=x._doc;
+    
+        const snapshot=await db.collection("events").get();
+        const list=snapshot.docs.map((doc)=>doc.data());
+        
+        for(let i=0;i<list.length;i++)
+        {
+            if(list[i].eventId == events[j].eventId)
+            {
+                k.eventImg= list[i].eventImgURL;
+            }
+        }
+        arr.push(k);
+    }
+    
+    res.status(200).send({ resCode: 200, events: arr });
+});
+
+// ----------------------------------------------- Get Single Event ------------------------------------------------------------------
+router.get("/getSingleEvent/:eventId", async (req, res) => {
+    var eventId=req.params.eventId;
+  
+    let eventFinding = await Event.findOne({ eventId: eventId });
+    let arr=[];
+
+    let x={
+        ...eventFinding
+    };
+    let k=x._doc;
+
+    const snapshot=await db.collection("events").get();
+    const list=snapshot.docs.map((doc)=>doc.data());
+    
+    for(let i=0;i<list.length;i++)
+    {
+        if(list[i].eventId == eventFinding.eventId)
+        {
+            k.eventImg= list[i].eventImgURL;
+        }
+    }
+    
+    res.status(200).send({ resCode: 200, event: k });
+});
+
+// ----------------------------------------------- Update Event ------------------------------------------------------------------
+router.patch("/editEvent/:eventId", async (req, res) => {
+    try {
+        var eventId=req.params.eventId;
+  
+        let eventFinding = await Event.findOne({ eventId: eventId });
+  
+        const updateEvent = await Event.findByIdAndUpdate(eventFinding._id, req.body, {new: true});
+        res.status(200).send(updateEvent);
+    }
+    catch(e) {
+        res.status(400).send(e);
+    }
+});
+
+// ----------------------------------------------- Delete Event ------------------------------------------------------------------
+router.post("/deleteEvent", async (req, res) => {
+    let eventId=req.body.eventId;
+    let eventFinding= await Event.deleteOne({ eventId: eventId });
+  
+    res.status(200).send({ resCode: 200, message: "Event Deleted Successfully!!" });
 });
 
 

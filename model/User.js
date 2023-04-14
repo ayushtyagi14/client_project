@@ -38,20 +38,9 @@ const userSchema= new mongoose.Schema({
         min: 1000000000,
         required: true
     },
-    profilePictureLink: {
-        type: String
-    },
     date: {
         type: Date,
         default: Date.now
-    },
-    age: {
-        type: Number,
-        default: 0
-    },
-    gender: {
-        type: String,
-        default: "Null"
     }
 });
 

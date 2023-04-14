@@ -24,7 +24,7 @@ app.use(express.json());
 app.use('/api/user',authRoute);
 app.use('/api/user',orderRoute);
 app.use('/api/user',sessionRoute);
-// app.use('/api/user',paymentRoute);
+// app.use('/api',paymentRoute);
 app.use('/api/admin',adminBlogRoute);
 app.use('/api/admin',adminTestimonialRoute);
 app.use('/api/posts',postRoute);
