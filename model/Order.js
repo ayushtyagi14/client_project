@@ -96,6 +96,10 @@ const orderSchema= new mongoose.Schema({
         type: String,
         required: true
     },
+    planDuration: {
+        type: Number,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now

@@ -32,6 +32,7 @@ router.post("/order", async (req, res) => {
       primaryGoals: req.body.primaryGoals,
       yogaBefore: req.body.yogaBefore,
       healthConcerns: req.body.healthConcerns,
+      planDuration: req.body.planDuration,
       paymentStatus: "Pending",
       paymentType: "Not Specified"
     });
@@ -49,7 +50,14 @@ router.post("/orderPaymentType", async (req, res) => {
     { $set: { paymentType: req.body.paymentType } }
   );
 
-  res.status(200).send({ resCode: 200, message: "Order Payment Type Updated Successfully!!", orderId: orderId });
+  var orderDetails = await Order.findOne({ orderId: orderId });
+  var sessionID = orderDetails.sessionId;
+  var sessionObjectFinding = await Session.findOne({ sessionId: sessionID });
+  var sessionPrice = sessionObjectFinding.sessionFee;
+
+  var planDuration = orderDetails.planDuration;
+
+  res.status(200).send({ resCode: 200, message: "Order Payment Type Updated Successfully!!", orderId: orderId, totalAmount: planDuration*sessionPrice });
 });
 
 

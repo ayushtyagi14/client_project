@@ -6,6 +6,8 @@ const Session = require("../model/Session");
 const User = require("../model/User");
 const Order = require("../model/Order");
 const Event = require("../model/Event");
+const Gallery = require("../model/Gallery");
+const Instructor = require("../model/Instructor");
 const { v4: uuid4 } = require('uuid');
 const firebase = require("firebase/app");
 const admin = require("firebase-admin");
@@ -409,5 +411,225 @@ router.post("/deleteEvent", async (req, res) => {
     res.status(200).send({ resCode: 200, message: "Event Deleted Successfully!!" });
 });
 
+
+
+
+// ----------------------------------------------- Add Gallery Photo -----------------------------------------------------------------
+router.post('/addGalleryPhoto', upload.single("myFile"), async (req, res) => {
+    const storageRef = ref(storage, `galleryPhotos/${req.file.originalname}`);
+    console.log(req.file.originalname);
+    const photoId=uuid4();
+
+    //Forming Current Date
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let currentDate = `${day}-${month}-${year}`;
+    // console.log(currentDate); // "17-6-2022"
+  
+    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
+      console.log("file uploaded");
+      getDownloadURL(ref(storage, `galleryPhotos/${req.file.originalname}`)).then((url)=> {
+        console.log("URL: "+url);
+
+        try{
+          const userJson={
+              photoId: photoId,
+              galleryImgURL: url
+          };
+          const response=db.collection("galleryPhotos").doc(photoId).set(userJson);
+          console.log(userJson);
+      } catch(error) {
+          console.log(error);
+      }
+    
+      });
+    });
+  
+    console.log(req.file);
+
+    const user = new Gallery({
+        photoId: photoId,
+        photoHeading: req.body.photoHeading
+    });
+      
+    var savedUser = await user.save();
+    res.status(200).send({ resCode: 200, message: "New Photo Added Successfully!!" });
+});
+
+// ----------------------------------------------- Get All Gallery Photos ------------------------------------------------------------------
+router.get("/getAllGalleryPhotos", async (req, res) => {
+    var photos = await Gallery.find();
+    let arr=[];
+
+    for(let j=0;j<photos.length;j++)
+    {
+        let x={
+            ...photos[j]
+        };
+        let k=x._doc;
+    
+        const snapshot=await db.collection("galleryPhotos").get();
+        const list=snapshot.docs.map((doc)=>doc.data());
+        
+        for(let i=0;i<list.length;i++)
+        {
+            if(list[i].photoId == photos[j].photoId)
+            {
+                k.galleryImg= list[i].galleryImgURL;
+            }
+        }
+        arr.push(k);
+    }
+    
+    res.status(200).send({ resCode: 200, galleryPhotos: arr });
+});
+
+// ----------------------------------------------- Get Single Gallery Photo ------------------------------------------------------------------
+router.get("/getSingleGalleryPhoto/:photoId", async (req, res) => {
+    var photoId=req.params.photoId;
+  
+    let photoFinding = await Gallery.findOne({ photoId: photoId });
+    let arr=[];
+
+    let x={
+        ...photoFinding
+    };
+    let k=x._doc;
+
+    const snapshot=await db.collection("galleryPhotos").get();
+    const list=snapshot.docs.map((doc)=>doc.data());
+    
+    for(let i=0;i<list.length;i++)
+    {
+        if(list[i].photoId == photoFinding.photoId)
+        {
+            k.galleryImg= list[i].galleryImgURL;
+        }
+    }
+    
+    res.status(200).send({ resCode: 200, galleryPhoto: k });
+});
+
+// ----------------------------------------------- Delete a Gallery Photo ------------------------------------------------------------------
+router.post("/deleteGalleryPhoto", async (req, res) => {
+    let photoId=req.body.photoId;
+    let mongoPhotoFinding= await Gallery.deleteOne({ photoId: photoId });
+
+    res.status(200).send({ resCode: 200, message: "Gallery Photo Deleted Successfully!!" });
+});
+
+
+
+
+// ----------------------------------------------- Add Instructor -----------------------------------------------------------------
+router.post('/addInstructor', upload.single("myFile"), async (req, res) => {
+    const storageRef = ref(storage, `instructors/${req.file.originalname}`);
+    console.log(req.file.originalname);
+    const instructorId=uuid4();
+
+    //Forming Current Date
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let currentDate = `${day}-${month}-${year}`;
+    // console.log(currentDate); // "17-6-2022"
+  
+    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
+      console.log("file uploaded");
+      getDownloadURL(ref(storage, `instructors/${req.file.originalname}`)).then((url)=> {
+        console.log("URL: "+url);
+
+        try{
+          const userJson={
+              instructorId: instructorId,
+              instructorImgURL: url
+          };
+          const response=db.collection("instructors").doc(instructorId).set(userJson);
+          console.log(userJson);
+      } catch(error) {
+          console.log(error);
+      }
+    
+      });
+    });
+  
+    console.log(req.file);
+
+    const user = new Instructor({
+        instructorId: instructorId,
+        instructorName: req.body.instructorName,
+        instructorDesc: req.body.instructorDesc
+    });
+      
+    var savedUser = await user.save();
+    res.status(200).send({ resCode: 200, message: "New Instructor Added Successfully!!" });
+});
+
+// ----------------------------------------------- Get All Instructors ------------------------------------------------------------------
+router.get("/getAllInstructors", async (req, res) => {
+    var instructors = await Instructor.find();
+    let arr=[];
+
+    for(let j=0;j<instructors.length;j++)
+    {
+        let x={
+            ...instructors[j]
+        };
+        let k=x._doc;
+    
+        const snapshot=await db.collection("instructors").get();
+        const list=snapshot.docs.map((doc)=>doc.data());
+        
+        for(let i=0;i<list.length;i++)
+        {
+            if(list[i].instructorId == instructors[j].instructorId)
+            {
+                k.instructorImg= list[i].instructorImgURL;
+            }
+        }
+        arr.push(k);
+    }
+    
+    res.status(200).send({ resCode: 200, instructors: arr });
+});
+
+// ----------------------------------------------- Get Single Instructor ------------------------------------------------------------------
+router.get("/getSingleInstructor/:instructorId", async (req, res) => {
+    var instructorId=req.params.instructorId;
+  
+    let instructorFinding = await Instructor.findOne({ instructorId: instructorId });
+    let arr=[];
+
+    let x={
+        ...instructorFinding
+    };
+    let k=x._doc;
+
+    const snapshot=await db.collection("instructors").get();
+    const list=snapshot.docs.map((doc)=>doc.data());
+    
+    for(let i=0;i<list.length;i++)
+    {
+        if(list[i].instructorId == instructorFinding.instructorId)
+        {
+            k.instructorImg= list[i].instructorImgURL;
+        }
+    }
+    
+    res.status(200).send({ resCode: 200, instructor: k });
+});
+
+// ----------------------------------------------- Delete an Instructor ------------------------------------------------------------------
+router.post("/deleteInstructor", async (req, res) => {
+    let instructorId=req.body.instructorId;
+    let instructorFinding= await Instructor.deleteOne({ instructorId: instructorId });
+
+    res.status(200).send({ resCode: 200, message: "Instructor Deleted Successfully!!" });
+});
 
 module.exports = router;
