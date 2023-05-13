@@ -18,11 +18,27 @@ const sessionSchema= new mongoose.Schema({
         type: String,
         required: true
     },
-    sessionFee: {
+    sessionPlan1Fee: {
         type: Number,
         required: true
     },
-    sessionDuration: {
+    sessionPlan1Duration: {
+        type: Number,
+        required: true
+    },
+    sessionPlan2Fee: {
+        type: Number,
+        required: true
+    },
+    sessionPlan2Duration: {
+        type: Number,
+        required: true
+    },
+    sessionPlan3Fee: {
+        type: Number,
+        required: true
+    },
+    sessionPlan3Duration: {
         type: Number,
         required: true
     },

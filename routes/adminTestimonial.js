@@ -175,8 +175,12 @@ router.post('/makeSession', upload.single("myFile"), async (req, res) => {
         sessionName: req.body.sessionName,
         sessionTime: req.body.sessionTime,
         teacherName: req.body.teacherName,
-        sessionFee: req.body.sessionFee,
-        sessionDuration: req.body.sessionDuration,
+        sessionPlan1Fee: req.body.sessionPlan1Fee,
+        sessionPlan1Duration: req.body.sessionPlan1Duration,
+        sessionPlan2Fee: req.body.sessionPlan2Fee,
+        sessionPlan2Duration: req.body.sessionPlan2Duration,
+        sessionPlan3Fee: req.body.sessionPlan3Fee,
+        sessionPlan3Duration: req.body.sessionPlan3Duration,
         sessionDesc: req.body.sessionDesc,
         sessionPublishDate: currentDate,
     });
@@ -280,6 +284,13 @@ router.post("/markPaymentDone", async (req, res) => {
     );
 
     res.status(200).send({ resCode: 200, message: "Order Payment Status Updated Successfully!!", orderId: orderId });
+});
+
+// ----------------------------------------------- Get All Orders ------------------------------------------------------------------
+router.get("/getAllOrders", async (req, res) => {
+    var orders = await Order.find();
+    
+    res.status(200).send({ resCode: 200, orders: orders });
 });
 
 

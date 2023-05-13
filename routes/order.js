@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const User = require("../model/User");
 const Order = require("../model/Order");
 const Session = require("../model/Session");
 const { v4: uuid4 } = require('uuid');
@@ -33,6 +32,7 @@ router.post("/order", async (req, res) => {
       yogaBefore: req.body.yogaBefore,
       healthConcerns: req.body.healthConcerns,
       planDuration: req.body.planDuration,
+      planFee: req.body.planFee,
       paymentStatus: "Pending",
       paymentType: "Not Specified"
     });
@@ -49,15 +49,8 @@ router.post("/orderPaymentType", async (req, res) => {
     { orderId: orderId },
     { $set: { paymentType: req.body.paymentType } }
   );
-
-  var orderDetails = await Order.findOne({ orderId: orderId });
-  var sessionID = orderDetails.sessionId;
-  var sessionObjectFinding = await Session.findOne({ sessionId: sessionID });
-  var sessionPrice = sessionObjectFinding.sessionFee;
-
-  var planDuration = orderDetails.planDuration;
-
-  res.status(200).send({ resCode: 200, message: "Order Payment Type Updated Successfully!!", orderId: orderId, totalAmount: planDuration*sessionPrice });
+  
+  res.status(200).send({ resCode: 200, message: "Order Payment Type Updated Successfully!!", orderId: orderId });
 });
 
 

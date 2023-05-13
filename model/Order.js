@@ -100,6 +100,10 @@ const orderSchema= new mongoose.Schema({
         type: Number,
         required: true
     },
+    planFee: {
+        type: Number,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now
