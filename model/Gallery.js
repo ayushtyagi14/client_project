@@ -10,6 +10,10 @@ const gallerySchema= new mongoose.Schema({
         type: String,
         required: true
     },
+    photoImgUrl: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now

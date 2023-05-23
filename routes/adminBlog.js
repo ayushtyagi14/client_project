@@ -6,6 +6,13 @@ const { v4: uuid4 } = require('uuid');
 const firebase = require("firebase/app");
 const admin = require("firebase-admin");
 const credentials =require("../key.json");
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({ 
+    cloud_name: 'dyna5ffxu', 
+    api_key: '774914337673996', 
+    api_secret: 'ssTaAoYMXIpCi2yCPlrPylKMqYE'
+});
 
 admin.initializeApp({
     credential:admin.credential.cert(credentials)
@@ -30,78 +37,38 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 
 // ----------------------------------------------- Create Blog -----------------------------------------------------------------
-router.post('/makeBlog', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `blogs/${req.file.originalname}`);
-    const blogId=uuid4();
+router.post('/makeBlog', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        const blogId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `blogs/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              blogId: blogId,
-              blogImgURL: url
-          };
-          const response=db.collection("blogs").doc(blogId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const file = new Blog({
-        blogId: blogId,
-        blogHeading: req.body.blogHeading,
-        blogContent: req.body.blogContent,
-        blogPublishDate: currentDate,
+        const filz = new Blog({
+            blogId: blogId,
+            blogHeading: req.body.blogHeading,
+            blogContent: req.body.blogContent,
+            blogPublishDate: currentDate,
+            blogImgUrl: result.url
+        })
+        const response = filz.save();
     })
-    const response = await file.save();
 
     res.status(200).send({ resCode: 200, message: "File, Blog Uploaded Successfully!!" });
 });
 
-
 // ----------------------------------------------- Get All Blogs ------------------------------------------------------------------
 router.get("/getAllBlogs", async (req, res) => {
     var blogs = await Blog.find();
-    let arr=[];
-
-    for(let j=0;j<blogs.length;j++)
-    {
-        let x={
-            ...blogs[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("blogs").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].blogId == blogs[j].blogId)
-            {
-                k.blogImg= list[i].blogImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, blogs: arr });
+    res.status(200).send({ resCode: 200, blogs: blogs });
 });
 
 // ----------------------------------------------- Update Blog ------------------------------------------------------------------
@@ -118,6 +85,25 @@ router.patch("/editBlog/:blogId", async (req, res) => {
         res.status(400).send(e);
     }
 });
+
+// // ----------------------------------------------- Update Blog Img -----------------------------------------------------------------
+// router.post('/editBlogImg', async (req, res) => {
+//     const file=req.files.myFile;
+//     var blogId = req.body.blogId;
+//     cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+//         console.log(result);
+//         // Blog.updateOne(
+//         //     { blogId: req.body.blogId },
+//         //     { $set: { blogImgUrl: result.url } }
+//         // );
+//         // db.collection("blogs").updateOne(
+//         //     { blogId: blogId },
+//         //     { $set: { blogImgUrl: result.url } }
+//         // );
+//     });
+
+//     res.status(200).send({ resCode: 200, message: "Blog Img Updated Successfully!!" });
+// });
   
 // ----------------------------------------------- Delete Blog ------------------------------------------------------------------
 router.post("/deleteBlog", async (req, res) => {

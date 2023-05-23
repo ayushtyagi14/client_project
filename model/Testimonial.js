@@ -22,6 +22,10 @@ const testimonialSchema= new mongoose.Schema({
         type: String,
         required: true
     },
+    testimonialImgUrl: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now

@@ -50,6 +50,10 @@ const sessionSchema= new mongoose.Schema({
         type: String,
         required: true
     },
+    sessionImgUrl: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now

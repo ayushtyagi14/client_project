@@ -13,6 +13,14 @@ const firebase = require("firebase/app");
 const admin = require("firebase-admin");
 const credentials =require("../key.json");
 
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({ 
+    cloud_name: 'dyna5ffxu', 
+    api_key: '774914337673996', 
+    api_secret: 'ssTaAoYMXIpCi2yCPlrPylKMqYE'
+});
+
 // admin.initializeApp({
 //     credential:admin.credential.cert(credentials)
 // });
@@ -36,48 +44,30 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 
 // ----------------------------------------------- Create Testimonial -----------------------------------------------------------------
-router.post('/makeTestimonial', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `testimonials/${req.file.originalname}`);
-    const testimonialId=uuid4();
+router.post('/makeTestimonial', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        const testimonialId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `testimonials/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              testimonialId: testimonialId,
-              testimonialImgURL: url
-          };
-          const response=db.collection("testimonials").doc(testimonialId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const file = new Testimonial({
-        testimonialId: testimonialId,
-        testimonialPersonName: req.body.testimonialPersonName,
-        testimonialPersonDesig: req.body.testimonialPersonDesig,
-        testimonialContent: req.body.testimonialContent,
-        testimonialPublishDate: currentDate,
+        const filz = new Testimonial({
+            testimonialId: testimonialId,
+            testimonialPersonName: req.body.testimonialPersonName,
+            testimonialPersonDesig: req.body.testimonialPersonDesig,
+            testimonialContent: req.body.testimonialContent,
+            testimonialPublishDate: currentDate,
+            testimonialImgUrl: result.url
+        })
+        const response = filz.save();
     })
-    const response = await file.save();
 
     res.status(200).send({ resCode: 200, message: "File, Testimonial Uploaded Successfully!!" });
 });
@@ -85,29 +75,8 @@ router.post('/makeTestimonial', upload.single("myFile"), async (req, res) => {
 // ----------------------------------------------- Get All Testimonials ------------------------------------------------------------------
 router.get("/getAllTestimonials", async (req, res) => {
     var testimonials = await Testimonial.find();
-    let arr=[];
-
-    for(let j=0;j<testimonials.length;j++)
-    {
-        let x={
-            ...testimonials[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("testimonials").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].testimonialId == testimonials[j].testimonialId)
-            {
-                k.testimonialImg= list[i].testimonialImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, testimonials: arr });
+    res.status(200).send({ resCode: 200, testimonials: testimonials });
 });
 
 // ----------------------------------------------- Update Testimonial ------------------------------------------------------------------
@@ -133,114 +102,67 @@ router.post("/deleteTestimonial", async (req, res) => {
     res.status(200).send({ resCode: 200, message: "Testimonial Deleted Successfully!!" });
 });
 
+// ----------------------------------------------- Get Single Testimonial ------------------------------------------------------------------
+router.get("/getSingleTestimonial/:testimonialId", async (req, res) => {
+    var testimonialId=req.params.testimonialId;
+    let testimonialFinding = await Testimonial.findOne({ testimonialId: testimonialId });
+    
+    res.status(200).send({ resCode: 200, testimonial: testimonialFinding });
+});
+
 
 
 // ----------------------------------------------- Create Session -----------------------------------------------------------------
-router.post('/makeSession', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `sessions/${req.file.originalname}`);
-    const sessionId=uuid4();
+router.post('/makeSession', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        
+        const sessionId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `sessions/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              sessionId: sessionId,
-              sessionImgURL: url
-          };
-          const response=db.collection("sessions").doc(sessionId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const user = new Session({
-        sessionId: sessionId,
-        sessionName: req.body.sessionName,
-        sessionTime: req.body.sessionTime,
-        teacherName: req.body.teacherName,
-        sessionPlan1Fee: req.body.sessionPlan1Fee,
-        sessionPlan1Duration: req.body.sessionPlan1Duration,
-        sessionPlan2Fee: req.body.sessionPlan2Fee,
-        sessionPlan2Duration: req.body.sessionPlan2Duration,
-        sessionPlan3Fee: req.body.sessionPlan3Fee,
-        sessionPlan3Duration: req.body.sessionPlan3Duration,
-        sessionDesc: req.body.sessionDesc,
-        sessionPublishDate: currentDate,
-    });
-      
-    var savedUser = await user.save();
+        const user = new Session({
+            sessionId: sessionId,
+            sessionName: req.body.sessionName,
+            sessionTime: req.body.sessionTime,
+            teacherName: req.body.teacherName,
+            sessionPlan1Fee: req.body.sessionPlan1Fee,
+            sessionPlan1Duration: req.body.sessionPlan1Duration,
+            sessionPlan2Fee: req.body.sessionPlan2Fee,
+            sessionPlan2Duration: req.body.sessionPlan2Duration,
+            sessionPlan3Fee: req.body.sessionPlan3Fee,
+            sessionPlan3Duration: req.body.sessionPlan3Duration,
+            sessionDesc: req.body.sessionDesc,
+            sessionPublishDate: currentDate,
+            sessionImgUrl: result.url
+        });
+          
+        var savedUser = user.save();
+    })
+    
     res.status(200).send({ resCode: 200, message: "New Session Added Successfully!!" });
 });
 
 // ----------------------------------------------- Get All Sessions ------------------------------------------------------------------
 router.get("/getAllSessions", async (req, res) => {
     var sessions = await Session.find();
-    let arr=[];
-
-    for(let j=0;j<sessions.length;j++)
-    {
-        let x={
-            ...sessions[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("sessions").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].sessionId == sessions[j].sessionId)
-            {
-                k.sessionImg= list[i].sessionImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, sessions: arr });
+    res.status(200).send({ resCode: 200, sessions: sessions });
 });
 
 // ----------------------------------------------- Get Single Session ------------------------------------------------------------------
 router.get("/getSingleSession/:sessionId", async (req, res) => {
     var sessionId=req.params.sessionId;
-  
     let sessionFinding = await Session.findOne({ sessionId: sessionId });
-    let arr=[];
-
-    let x={
-        ...sessionFinding
-    };
-    let k=x._doc;
-
-    const snapshot=await db.collection("sessions").get();
-    const list=snapshot.docs.map((doc)=>doc.data());
     
-    for(let i=0;i<list.length;i++)
-    {
-        if(list[i].sessionId == sessionFinding.sessionId)
-        {
-            k.sessionImg= list[i].sessionImgURL;
-        }
-    }
-    
-    res.status(200).send({ resCode: 200, session: k });
+    res.status(200).send({ resCode: 200, session: sessionFinding });
 });
 
 // ----------------------------------------------- Update Session ------------------------------------------------------------------
@@ -296,81 +218,44 @@ router.get("/getAllOrders", async (req, res) => {
 
 
 // ----------------------------------------------- Create Event -----------------------------------------------------------------
-router.post('/makeEvent', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `events/${req.file.originalname}`);
-    const eventId=uuid4();
+router.post('/makeEvent', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        
+        const eventId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `events/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              eventId: eventId,
-              eventImgURL: url
-          };
-          const response=db.collection("events").doc(eventId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const user = new Event({
-        eventId: eventId,
-        eventName: req.body.eventName,
-        eventTime: req.body.eventTime,
-        teacherName: req.body.teacherName,
-        eventFee: req.body.eventFee,
-        eventDuration: req.body.eventDuration,
-        eventDesc: req.body.eventDesc,
-        eventDate: req.body.eventDate
-    });
-      
-    var savedUser = await user.save();
+        const user = new Event({
+            eventId: eventId,
+            eventName: req.body.eventName,
+            eventTime: req.body.eventTime,
+            teacherName: req.body.teacherName,
+            eventFee: req.body.eventFee,
+            eventDuration: req.body.eventDuration,
+            eventDesc: req.body.eventDesc,
+            eventDate: req.body.eventDate,
+            eventImgUrl: result.url
+        });
+          
+        var savedUser = user.save();
+    })
+    
     res.status(200).send({ resCode: 200, message: "New Event Added Successfully!!" });
 });
 
 // ----------------------------------------------- Get All Events ------------------------------------------------------------------
 router.get("/getAllEvents", async (req, res) => {
     var events = await Event.find();
-    let arr=[];
-
-    for(let j=0;j<events.length;j++)
-    {
-        let x={
-            ...events[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("events").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].eventId == events[j].eventId)
-            {
-                k.eventImg= list[i].eventImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, events: arr });
+    res.status(200).send({ resCode: 200, events: events });
 });
 
 // ----------------------------------------------- Get Single Event ------------------------------------------------------------------
@@ -378,25 +263,8 @@ router.get("/getSingleEvent/:eventId", async (req, res) => {
     var eventId=req.params.eventId;
   
     let eventFinding = await Event.findOne({ eventId: eventId });
-    let arr=[];
-
-    let x={
-        ...eventFinding
-    };
-    let k=x._doc;
-
-    const snapshot=await db.collection("events").get();
-    const list=snapshot.docs.map((doc)=>doc.data());
     
-    for(let i=0;i<list.length;i++)
-    {
-        if(list[i].eventId == eventFinding.eventId)
-        {
-            k.eventImg= list[i].eventImgURL;
-        }
-    }
-    
-    res.status(200).send({ resCode: 200, event: k });
+    res.status(200).send({ resCode: 200, event: eventFinding });
 });
 
 // ----------------------------------------------- Update Event ------------------------------------------------------------------
@@ -426,102 +294,45 @@ router.post("/deleteEvent", async (req, res) => {
 
 
 // ----------------------------------------------- Add Gallery Photo -----------------------------------------------------------------
-router.post('/addGalleryPhoto', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `galleryPhotos/${req.file.originalname}`);
-    console.log(req.file.originalname);
-    const photoId=uuid4();
+router.post('/addGalleryPhoto', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        const photoId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `galleryPhotos/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              photoId: photoId,
-              galleryImgURL: url
-          };
-          const response=db.collection("galleryPhotos").doc(photoId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const user = new Gallery({
-        photoId: photoId,
-        photoHeading: req.body.photoHeading
-    });
-      
-    var savedUser = await user.save();
+        const user = new Gallery({
+            photoId: photoId,
+            photoHeading: req.body.photoHeading,
+            photoImgUrl: result.url
+        });
+          
+        var savedUser = user.save();
+    })
+    
     res.status(200).send({ resCode: 200, message: "New Photo Added Successfully!!" });
 });
 
 // ----------------------------------------------- Get All Gallery Photos ------------------------------------------------------------------
 router.get("/getAllGalleryPhotos", async (req, res) => {
     var photos = await Gallery.find();
-    let arr=[];
-
-    for(let j=0;j<photos.length;j++)
-    {
-        let x={
-            ...photos[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("galleryPhotos").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].photoId == photos[j].photoId)
-            {
-                k.galleryImg= list[i].galleryImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, galleryPhotos: arr });
+    res.status(200).send({ resCode: 200, galleryPhotos: photos });
 });
 
 // ----------------------------------------------- Get Single Gallery Photo ------------------------------------------------------------------
 router.get("/getSingleGalleryPhoto/:photoId", async (req, res) => {
     var photoId=req.params.photoId;
-  
     let photoFinding = await Gallery.findOne({ photoId: photoId });
-    let arr=[];
-
-    let x={
-        ...photoFinding
-    };
-    let k=x._doc;
-
-    const snapshot=await db.collection("galleryPhotos").get();
-    const list=snapshot.docs.map((doc)=>doc.data());
     
-    for(let i=0;i<list.length;i++)
-    {
-        if(list[i].photoId == photoFinding.photoId)
-        {
-            k.galleryImg= list[i].galleryImgURL;
-        }
-    }
-    
-    res.status(200).send({ resCode: 200, galleryPhoto: k });
+    res.status(200).send({ resCode: 200, galleryPhoto: photoFinding });
 });
 
 // ----------------------------------------------- Delete a Gallery Photo ------------------------------------------------------------------
@@ -536,103 +347,46 @@ router.post("/deleteGalleryPhoto", async (req, res) => {
 
 
 // ----------------------------------------------- Add Instructor -----------------------------------------------------------------
-router.post('/addInstructor', upload.single("myFile"), async (req, res) => {
-    const storageRef = ref(storage, `instructors/${req.file.originalname}`);
-    console.log(req.file.originalname);
-    const instructorId=uuid4();
+router.post('/addInstructor', async (req, res) => {
+    const file=req.files.myFile;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        console.log(result);
+        const instructorId=uuid4();
 
-    //Forming Current Date
-    const date = new Date();
-    let day = date.getDate();
-    let month = date.getMonth() + 1;
-    let year = date.getFullYear();
-
-    let currentDate = `${day}-${month}-${year}`;
-    // console.log(currentDate); // "17-6-2022"
-  
-    const snap=await uploadBytes(storageRef, req.file.buffer).then((snapshot) => {
-      console.log("file uploaded");
-      getDownloadURL(ref(storage, `instructors/${req.file.originalname}`)).then((url)=> {
-        console.log("URL: "+url);
-
-        try{
-          const userJson={
-              instructorId: instructorId,
-              instructorImgURL: url
-          };
-          const response=db.collection("instructors").doc(instructorId).set(userJson);
-          console.log(userJson);
-      } catch(error) {
-          console.log(error);
-      }
+        //Forming Current Date
+        const date = new Date();
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
     
-      });
-    });
-  
-    console.log(req.file);
+        let currentDate = `${day}-${month}-${year}`;
 
-    const user = new Instructor({
-        instructorId: instructorId,
-        instructorName: req.body.instructorName,
-        instructorDesc: req.body.instructorDesc
-    });
-      
-    var savedUser = await user.save();
+        const user = new Instructor({
+            instructorId: instructorId,
+            instructorName: req.body.instructorName,
+            instructorDesc: req.body.instructorDesc,
+            instructorImgUrl: result.url
+        });
+          
+        var savedUser = user.save();
+    })
+    
     res.status(200).send({ resCode: 200, message: "New Instructor Added Successfully!!" });
 });
 
 // ----------------------------------------------- Get All Instructors ------------------------------------------------------------------
 router.get("/getAllInstructors", async (req, res) => {
     var instructors = await Instructor.find();
-    let arr=[];
-
-    for(let j=0;j<instructors.length;j++)
-    {
-        let x={
-            ...instructors[j]
-        };
-        let k=x._doc;
     
-        const snapshot=await db.collection("instructors").get();
-        const list=snapshot.docs.map((doc)=>doc.data());
-        
-        for(let i=0;i<list.length;i++)
-        {
-            if(list[i].instructorId == instructors[j].instructorId)
-            {
-                k.instructorImg= list[i].instructorImgURL;
-            }
-        }
-        arr.push(k);
-    }
-    
-    res.status(200).send({ resCode: 200, instructors: arr });
+    res.status(200).send({ resCode: 200, instructors: instructors });
 });
 
 // ----------------------------------------------- Get Single Instructor ------------------------------------------------------------------
 router.get("/getSingleInstructor/:instructorId", async (req, res) => {
     var instructorId=req.params.instructorId;
-  
     let instructorFinding = await Instructor.findOne({ instructorId: instructorId });
-    let arr=[];
-
-    let x={
-        ...instructorFinding
-    };
-    let k=x._doc;
-
-    const snapshot=await db.collection("instructors").get();
-    const list=snapshot.docs.map((doc)=>doc.data());
     
-    for(let i=0;i<list.length;i++)
-    {
-        if(list[i].instructorId == instructorFinding.instructorId)
-        {
-            k.instructorImg= list[i].instructorImgURL;
-        }
-    }
-    
-    res.status(200).send({ resCode: 200, instructor: k });
+    res.status(200).send({ resCode: 200, instructor: instructorFinding });
 });
 
 // ----------------------------------------------- Delete an Instructor ------------------------------------------------------------------
