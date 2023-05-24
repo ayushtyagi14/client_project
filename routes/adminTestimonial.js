@@ -93,6 +93,23 @@ router.patch("/editTestimonial/:testimonialId", async (req, res) => {
         res.status(400).send(e);
     }
 });
+
+// ----------------------------------------------- Update Testimonial Img -----------------------------------------------------------------
+router.post('/editTestimonialImg', async (req, res) => {
+    const file=req.files.myFile;
+    var testimonialId = req.body.testimonialId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
+
+        var dbResponse= await Testimonial.updateOne(
+            { testimonialId: testimonialId },
+            { $set: { testimonialImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Testimonial Img Updated Successfully!!" });
+});
   
 // ----------------------------------------------- Delete Testimonial ------------------------------------------------------------------
 router.post("/deleteTestimonial", async (req, res) => {
@@ -178,6 +195,23 @@ router.patch("/editSession/:sessionId", async (req, res) => {
     catch(e) {
         res.status(400).send(e);
     }
+});
+
+// ----------------------------------------------- Update Session Img -----------------------------------------------------------------
+router.post('/editSessionImg', async (req, res) => {
+    const file=req.files.myFile;
+    var sessionId = req.body.sessionId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
+
+        var dbResponse= await Session.updateOne(
+            { sessionId: sessionId },
+            { $set: { sessionImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Session Img Updated Successfully!!" });
 });
 
 // ----------------------------------------------- Delete Session ------------------------------------------------------------------
@@ -282,6 +316,23 @@ router.patch("/editEvent/:eventId", async (req, res) => {
     }
 });
 
+// ----------------------------------------------- Update Event Img -----------------------------------------------------------------
+router.post('/editEventImg', async (req, res) => {
+    const file=req.files.myFile;
+    var eventId = req.body.eventId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
+
+        var dbResponse= await Event.updateOne(
+            { eventId: eventId },
+            { $set: { eventImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Event Img Updated Successfully!!" });
+});
+
 // ----------------------------------------------- Delete Event ------------------------------------------------------------------
 router.post("/deleteEvent", async (req, res) => {
     let eventId=req.body.eventId;
@@ -325,6 +376,23 @@ router.get("/getAllGalleryPhotos", async (req, res) => {
     var photos = await Gallery.find();
     
     res.status(200).send({ resCode: 200, galleryPhotos: photos });
+});
+
+// ----------------------------------------------- Update Gallery Img -----------------------------------------------------------------
+router.post('/editGalleryImg', async (req, res) => {
+    const file=req.files.myFile;
+    var photoId = req.body.photoId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
+
+        var dbResponse= await Gallery.updateOne(
+            { photoId: photoId },
+            { $set: { photoImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Gallery Img Updated Successfully!!" });
 });
 
 // ----------------------------------------------- Get Single Gallery Photo ------------------------------------------------------------------
@@ -395,6 +463,38 @@ router.post("/deleteInstructor", async (req, res) => {
     let instructorFinding= await Instructor.deleteOne({ instructorId: instructorId });
 
     res.status(200).send({ resCode: 200, message: "Instructor Deleted Successfully!!" });
+});
+
+// ----------------------------------------------- Update Instructor Img -----------------------------------------------------------------
+router.post('/editInstructorImg', async (req, res) => {
+    const file=req.files.myFile;
+    var instructorId = req.body.instructorId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
+
+        var dbResponse= await Instructor.updateOne(
+            { instructorId: instructorId },
+            { $set: { instructorImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Instructor Img Updated Successfully!!" });
+});
+
+// ----------------------------------------------- Update Instructor ------------------------------------------------------------------
+router.patch("/editInstructor/:instructorId", async (req, res) => {
+    try {
+        var instructorId=req.params.instructorId;
+  
+        let instructorFinding = await Instructor.findOne({ instructorId: instructorId });
+  
+        const updateInstructor = await Instructor.findByIdAndUpdate(instructorFinding._id, req.body, {new: true});
+        res.status(200).send(updateInstructor);
+    }
+    catch(e) {
+        res.status(400).send(e);
+    }
 });
 
 module.exports = router;

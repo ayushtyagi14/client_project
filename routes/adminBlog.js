@@ -7,6 +7,8 @@ const firebase = require("firebase/app");
 const admin = require("firebase-admin");
 const credentials =require("../key.json");
 const cloudinary = require("cloudinary").v2;
+const bodyParser = require("body-parser");
+router.use(bodyParser.urlencoded({ extended: true }));
 
 cloudinary.config({ 
     cloud_name: 'dyna5ffxu', 
@@ -86,24 +88,22 @@ router.patch("/editBlog/:blogId", async (req, res) => {
     }
 });
 
-// // ----------------------------------------------- Update Blog Img -----------------------------------------------------------------
-// router.post('/editBlogImg', async (req, res) => {
-//     const file=req.files.myFile;
-//     var blogId = req.body.blogId;
-//     cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
-//         console.log(result);
-//         // Blog.updateOne(
-//         //     { blogId: req.body.blogId },
-//         //     { $set: { blogImgUrl: result.url } }
-//         // );
-//         // db.collection("blogs").updateOne(
-//         //     { blogId: blogId },
-//         //     { $set: { blogImgUrl: result.url } }
-//         // );
-//     });
+// ----------------------------------------------- Update Blog Img -----------------------------------------------------------------
+router.post('/editBlogImg', async (req, res) => {
+    const file=req.files.myFile;
+    var blogId = req.body.blogId;
+    
+    cloudinary.uploader.upload(file.tempFilePath, async (err,result)=>{
+        console.log(result);
 
-//     res.status(200).send({ resCode: 200, message: "Blog Img Updated Successfully!!" });
-// });
+        var dbResponse= await Blog.updateOne(
+            { blogId: blogId },
+            { $set: { blogImgUrl: result.url } }
+        );
+    });
+
+    res.status(200).send({ resCode: 200, message: "Blog Img Updated Successfully!!" });
+});
   
 // ----------------------------------------------- Delete Blog ------------------------------------------------------------------
 router.post("/deleteBlog", async (req, res) => {
